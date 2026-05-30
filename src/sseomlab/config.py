@@ -67,3 +67,8 @@ def get_demand() -> dict[str, Any]:
 @lru_cache
 def get_concepts() -> dict[str, Any]:
     return _load_yaml("concepts.yaml")
+
+
+@lru_cache
+def get_sales() -> dict[str, Any]:
+    return _load_yaml("sales.yaml")

@@ -67,14 +67,25 @@ def score(place: Place, analysis: PlaceAnalysis, soft_hits: list[str] | None = N
         "parking": a.parking_likelihood,
     })
 
-    # --- 협업 가능성 ---
+    # --- 협업 가능성 (다요소: 제안이 먹힐 공간인가) ---
     cb_w = cfg["collaboration"]["weights"]
+    reviews = place.naver_review_count or 0
     contactable = 1.0 if (place.phone or place.homepage or place.instagram_url) else 0.3
+    review_sweet = _sweetspot(place.naver_review_count, lo, hi)
+    # 추가매출 니즈: 노출 부족 + 대관 신호가 있을수록 큼
+    upsell_need = 0.5 * (1 - a.instagram_exposure) + 0.5 * (1.0 if a.rental_signal else 0.5)
+    # 운영 안정성: 적정 리뷰(운영 실적) + 연락 채널 존재
+    stability = 0.6 * min(1.0, reviews / 50) + 0.4 * contactable
     cb = _wsum(cb_w, {
-        "weekday_idle_capacity": a.weekday_idle_likelihood,
+        "weekday_idle": a.weekday_idle_likelihood,
+        "low_online_exposure": 1 - a.instagram_exposure,
+        "review_sweetspot": review_sweet,
         "not_franchise": 0.0 if a.is_franchise else 1.0,
-        "rental_signal": 1.0 if a.rental_signal else 0.3,
-        "contactability": contactable,
+        "low_wedding_specialization": 1 - a.wedding_mention_level,
+        "rental_upsell_need": min(1.0, upsell_need),
+        "parking": a.parking_likelihood,
+        "accessibility": a.accessibility,
+        "operational_stability": min(1.0, stability),
     })
 
     hs100, wc100, dc100, cb100 = (round(x * 100) for x in (hs, wc, dc, cb))

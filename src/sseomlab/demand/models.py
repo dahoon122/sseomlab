@@ -64,17 +64,27 @@ class CalibrationResult(BaseModel):
 
 
 class SupplyShortage(BaseModel):
-    """(지역, 월) 돌잔치 공급 부족 예측."""
+    """(지역, 월) 돌잔치 공급 부족 예측 — 웨딩홀 겸업 seasonality 반영."""
 
     region: str
     year: int
     month: int
     is_peak_season: bool
-    total_demand_events: float        # 지역 전체 돌잔치 이벤트 수요
-    hidden_demand: float              # 소규모/숨은 공간을 필요로 하는 수요
-    capacity: float                   # 숨은/소규모 공간 수용량
-    shortfall: float                  # max(0, hidden_demand - capacity)
-    recommended_types: list[str] = []
+    seasonality_factor: float         # 웨딩홀 돌잔치 수용 계수 (성수기↓/비수기↑)
+    total_demand_events: float        # 예상 돌잔치 수요
+    hall_available: float             # 웨딩홀/호텔 수용 가능 (성수기 반영)
+    hidden_need: float                # 숨은공간 필요 수요 = 수요 - 웨딩홀수용
+    hidden_secured: float             # 현재 확보된 숨은공간 수용량
+    shortfall: float                  # 부족분 = max(0, hidden_need - hidden_secured)
+    recommended_action: dict[str, int] = {}   # {유형: 확보 공간 수}
+
+    @property
+    def recommended_types(self) -> list[str]:
+        return list(self.recommended_action.keys())
+
+    @property
+    def action_text(self) -> str:
+        return ", ".join(f"{k} {v}곳" for k, v in self.recommended_action.items())
 
 
 class OpportunityReport(BaseModel):

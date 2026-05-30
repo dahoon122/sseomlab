@@ -1,0 +1,48 @@
+# 영업 자동화: 컨셉 카테고리별 추천 상품/객단가 + 공통 영업 설정.
+# 제이드컴퍼니 내부 영업용. 객단가/상품은 초기 가정값 — 실제 계약 데이터로 보정.
+
+default:
+  weekday_idle_window: "평일 오전 11시~오후 4시"
+  prep_lead_months: 4        # 웨딩 성수기 대비 사전 확보 리드타임(개월)
+
+categories:
+  정원형:
+    product_name: "가든 스몰웨딩·야외 돌상 패키지"
+    expected_products: [가든 스몰웨딩, 야외 돌상 대관, 브라이덜 샤워]
+    avg_price_krw: 2500000
+  한옥/고택형:
+    product_name: "한옥 전통·모던 돌상 패키지"
+    expected_products: [한옥 스몰웨딩, 전통 좌식 돌상, 한복 스냅]
+    avg_price_krw: 2200000
+  오션뷰형:
+    product_name: "선셋 오션뷰 웨딩·리조트 돌상"
+    expected_products: [선셋 스몰웨딩, 리조트형 돌상, 패밀리 화보]
+    avg_price_krw: 2800000
+  숲속/자연형:
+    product_name: "포레스트 힐링 웨딩·돌상"
+    expected_products: [숲속 스몰웨딩, 보태니컬 돌상]
+    avg_price_krw: 2400000
+  루프탑/도심뷰형:
+    product_name: "시티뷰 나이트 웨딩·파티 돌상"
+    expected_products: [루프탑 스몰웨딩, 파티형 돌상, 칵테일 리셉션]
+    avg_price_krw: 2600000
+  브런치/레스토랑형:
+    product_name: "다이닝 스몰웨딩·코스 돌상"
+    expected_products: [레스토랑 스몰웨딩, 코스요리 돌상]
+    avg_price_krw: 2000000
+  갤러리/복합문화공간형:
+    product_name: "갤러리 아트 웨딩·돌상"
+    expected_products: [갤러리 스몰웨딩, 아트 돌상]
+    avg_price_krw: 2700000
+  대형 베이커리카페형:
+    product_name: "디저트 파티 웨딩·돌상"
+    expected_products: [카페 스몰웨딩, 디저트테이블 돌상]
+    avg_price_krw: 1800000
+  프라이빗 독채형:
+    product_name: "단독대관 프라이빗 웨딩·돌상"
+    expected_products: [독채 풀데이 웨딩, 프라이빗 돌상]
+    avg_price_krw: 3500000
+  농장/목장/체험형:
+    product_name: "러스틱 체험 웨딩·목장 돌상"
+    expected_products: [러스틱 스몰웨딩, 목장 체험 돌상]
+    avg_price_krw: 2100000

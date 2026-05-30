@@ -79,7 +79,7 @@ def intel(
 
     typer.echo(
         f"완료: 공간 {len(records)}건 분석, A등급 {sum(counts.values())}건. "
-        "결과는 data/output/ (점수표·제안서·공간DB·수요예측·공급부족·지역별기회)"
+        "결과는 data/output/ (점수표·제안서·공간DB·영업키트·수요예측·공급부족·지역별기회)"
     )
 
 

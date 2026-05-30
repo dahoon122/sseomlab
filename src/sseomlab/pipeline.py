@@ -15,8 +15,9 @@ from sseomlab.analyze import exclusion
 from sseomlab.analyze import heuristic as heuristic_analyze
 from sseomlab.collect import csv_source, enrich, naver_local
 from sseomlab.concept import recommender
-from sseomlab.export import csv_out, excel, proposal_excel
+from sseomlab.export import csv_out, excel, proposal_excel, sales_excel
 from sseomlab.models import PlaceRecord
+from sseomlab.sales import generator as sales_gen
 from sseomlab.score import heuristic as heuristic_score
 from sseomlab.score import scorer
 
@@ -100,4 +101,13 @@ def run(
         proposals = [recommender.build_proposal(r, claude_refine=not offline) for r in records]
         proposal_excel.export(proposals, proposal_path)
         csv_out.export_proposals(proposals, Path(proposal_path).with_suffix(".csv"))
+
+        # 6) 영업 키트 (공간별 DM/전화스크립트/상품/객단가/연락시점)
+        kits = [
+            sales_gen.build_sales_kit(r, p, claude_refine=not offline)
+            for r, p in zip(records, proposals)
+        ]
+        out_dir = Path(out_path).parent
+        sales_excel.export(kits, out_dir / "영업키트.xlsx")
+        csv_out.export_sales(kits, out_dir / "영업키트.csv")
     return out

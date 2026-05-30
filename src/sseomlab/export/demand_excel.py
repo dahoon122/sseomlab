@@ -99,15 +99,16 @@ def export(
     # --- 시트4: 공급부족리포트 ---
     if shortages is not None:
         ws4 = wb.create_sheet("공급부족리포트")
-        ws4.append(["월", "지역", "성수기", "전체수요", "숨은공간수요", "수용량", "공급부족", "확보추천"])
+        ws4.append(["월", "지역", "성수기", "웨딩홀계수", "예상수요", "웨딩홀수용가능",
+                    "숨은공간필요", "확보숨은공간", "부족분", "추천액션"])
         for s in shortages:
             ws4.append([
-                f"{s.year}-{s.month:02d}", s.region, "성수기" if s.is_peak_season else "평월",
-                s.total_demand_events, s.hidden_demand, s.capacity, s.shortfall,
-                ", ".join(s.recommended_types),
+                f"{s.year}-{s.month:02d}", s.region, "성수기" if s.is_peak_season else "비수기",
+                s.seasonality_factor, s.total_demand_events, s.hall_available,
+                s.hidden_need, s.hidden_secured, s.shortfall, s.action_text,
             ])
             if s.shortfall > 0:
-                ws4.cell(row=ws4.max_row, column=7).fill = _SHORT_FILL
+                ws4.cell(row=ws4.max_row, column=9).fill = _SHORT_FILL
             if s.is_peak_season:
                 ws4.cell(row=ws4.max_row, column=3).fill = _PEAK_FILL
         _style_header(ws4)

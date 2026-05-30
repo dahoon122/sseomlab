@@ -1,6 +1,6 @@
-region,monthly_hidden_capacity
-대구,180
-경북,120
-부산,200
-경남,150
-강원,80
+region,hidden_secured_capacity
+대구,50
+경북,35
+부산,60
+경남,45
+강원,25

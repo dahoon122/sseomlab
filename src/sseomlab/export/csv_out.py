@@ -17,6 +17,7 @@ from sseomlab.demand.models import (
     SupplyShortage,
 )
 from sseomlab.models import PlaceRecord
+from sseomlab.sales.models import SalesKit
 
 
 def write_csv(path: str | Path, header: Sequence[str], rows: Sequence[Sequence]) -> Path:
@@ -98,13 +99,31 @@ def export_ad_plan(recs: list[AdRecommendation], path: str | Path) -> Path:
 
 
 def export_supply(shortages: list[SupplyShortage], path: str | Path) -> Path:
-    header = ["월", "지역", "성수기", "전체돌잔치수요", "숨은공간수요", "수용량", "공급부족", "확보추천유형"]
+    header = ["월", "지역", "성수기", "웨딩홀계수", "예상돌잔치수요", "웨딩홀수용가능",
+              "숨은공간필요수요", "확보숨은공간", "부족분", "추천액션"]
     rows = [[
-        f"{s.year}-{s.month:02d}", s.region, "성수기" if s.is_peak_season else "평월",
-        s.total_demand_events, s.hidden_demand, s.capacity, s.shortfall,
-        ", ".join(s.recommended_types),
+        f"{s.year}-{s.month:02d}", s.region, "성수기" if s.is_peak_season else "비수기",
+        s.seasonality_factor, s.total_demand_events, s.hall_available,
+        s.hidden_need, s.hidden_secured, s.shortfall, s.action_text,
     ] for s in shortages]
     return write_csv(path, header, rows)
+
+
+_SALES_HEADER = [
+    "연락우선순위", "등급", "공간명", "지역", "우선연락시점", "한줄평가", "적합이유",
+    "핵심이익(사장님)", "평일유휴제안", "샘플촬영제안", "DM문구", "전화스크립트",
+    "제안서제목", "추천상품명", "예상판매상품", "예상객단가(원)",
+]
+
+
+def export_sales(kits: list[SalesKit], path: str | Path) -> Path:
+    rows = [[
+        k.contact_priority, k.grade, k.space_name, k.region, k.contact_timing,
+        k.one_line_eval, k.why_fit, k.owner_benefit, k.weekday_idle_offer,
+        k.sample_shoot_offer, k.dm_message, k.phone_script, k.proposal_title,
+        k.product_name, " | ".join(k.expected_products), k.expected_avg_price_krw,
+    ] for k in sorted(kits, key=lambda k: k.contact_priority)]
+    return write_csv(path, _SALES_HEADER, rows)
 
 
 def export_opportunity(reports: list[OpportunityReport], path: str | Path) -> Path:

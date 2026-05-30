@@ -26,13 +26,19 @@ dolsang_conversion:
     food_service: 0.25             # 식사/케이터링 제공
     parking: 0.15
 
-# 협업 가능성 점수 (collaboration_probability)
+# 협업 가능성 점수 (collaboration_probability) — 사장님이 추가매출 제안을 받아들일 가능성
+# "예쁜 공간"이 아니라 "제안이 먹힐 공간"을 찾기 위한 다요소 모델.
 collaboration:
   weights:
-    weekday_idle_capacity: 0.30     # 평일 유휴시간 가능성
-    not_franchise: 0.25             # 개인/독립 운영(체인 아님)
-    rental_signal: 0.25            # 대관/단체 문구 존재
-    contactability: 0.20           # 연락처/예약채널 존재
+    weekday_idle: 0.18              # 평일 유휴시간 가능성
+    low_online_exposure: 0.14      # 온라인 노출 부족(홍보 니즈)
+    review_sweetspot: 0.12         # 리뷰가 너무 많지도/적지도 않은지
+    not_franchise: 0.12            # 대형 프랜차이즈가 아님(의사결정 빠름)
+    low_wedding_specialization: 0.12  # 웨딩/대관 전문성이 낮음(전환 여지)
+    rental_upsell_need: 0.10       # 공간대관 추가매출 니즈
+    parking: 0.08                  # 주차 가능성
+    accessibility: 0.06            # 접근성/동선
+    operational_stability: 0.08    # 운영 안정성(폐업 리스크 낮음)
 
 # 등급 컷오프 (연락 우선순위용 종합점수 기준)
 grade_cutoffs:

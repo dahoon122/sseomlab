@@ -23,8 +23,8 @@ def build(
 
     reports: list[OpportunityReport] = []
     for region, items in by_region.items():
-        annual_hidden = sum(s.hidden_demand for s in items)
-        annual_cap = sum(s.capacity for s in items)
+        annual_hidden = sum(s.hidden_need for s in items)
+        annual_cap = sum(s.hidden_secured for s in items)
         annual_short = sum(s.shortfall for s in items)
         peak_short = sum(s.shortfall for s in items if s.month in peak_months)
         short_months = [ym_label(s.year, s.month) for s in items if s.shortfall > 0]
