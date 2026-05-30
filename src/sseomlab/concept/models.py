@@ -15,6 +15,8 @@ class ConceptProfile(BaseModel):
     color_palette: list[str]
     flower_direction: str
     table_setting: str
+    chair_style: str = ""
+    photozone_ideas: list[str] = []
     photo_points: list[str]
     risks: list[str]
     reference_keywords: list[str]

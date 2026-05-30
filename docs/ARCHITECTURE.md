@@ -51,6 +51,28 @@
 - 비밀키·런타임 옵션은 `.env` — 절대 커밋 금지
 - 코드는 정책을 '실행'만 한다
 
+## 두 번째 흐름: 수요·공급·매출 인텔리전스
+```
+ KOSIS 출생아(또는 합성)  ──► 12개월 시프트(돌 나이) ──► DemandForecast(지역·월)
+        │                                                     │
+        │ 제이드 실적(CSV) ──► calibration(전환율 보정) ──► 재예측
+        │                                                     │
+        ├──► ad_timing: 수요월 역산 ──► 광고 집중 구간 추천
+        │                                                     │
+        └──► supply: 성수기 hidden_share 적용 ──► hidden_demand vs 수용량
+                     └► SupplyShortage(부족+확보추천)
+                              │
+                              └► opportunity: 지역별 부족·성수기집중·A등급발굴수 종합
+```
+**웨딩 성수기 로직**이 supply 단계의 핵심: 성수기(3-5,9-11월)엔 `hidden_share`가
+base(0.35)→peak(0.55)로 올라, 같은 수요라도 숨은 공간이 더 많이 필요해져 부족이 커진다.
+이 부족이 곧 "지금 어느 지역에서 어떤 유형의 공간을 확보해야 하는가"의 신호다.
+
+## 오프라인(MVP)/실연동 이중 경로
+- **오프라인**: `csv_source`(목업) + `analyze/heuristic` + `score/heuristic` + 합성 출생데이터.
+  키 없이 전 기능 검증. `intel`/`--dry-run`이 이 경로.
+- **실연동**: `naver_local` + Claude `scorer` + KOSIS. 인터페이스가 동일해 교체만 하면 된다.
+
 ## 확장 포인트
 - 새 수집원: `collect/` 에 `collect()->list[Place]` 모듈 추가 후 pipeline 에 연결
 - 새 공간유형/지역: `config/*.yaml` 만 수정

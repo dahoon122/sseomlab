@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import typer
 
+from sseomlab import pipeline
 from sseomlab.demand.pipeline import run as run_forecast
 from sseomlab.pipeline import run as run_pipeline
 
@@ -57,6 +58,29 @@ def forecast(
         dry_run=dry_run,
     )
     typer.echo(f"완료: {path}")
+
+
+@app.command()
+def intel(
+    region: list[str] = typer.Option(None, help="대상 지역 (반복 지정). 미지정 시 전체"),
+    csv_in: str = typer.Option("data/sample_candidates.csv", help="공간 후보 CSV (목업)"),
+    dry_run: bool = typer.Option(True, "--dry-run/--live", help="기본 목업 모드 (키 불필요)"),
+):
+    """[통합] 공간 발굴 + 수요/공급/기회 리포트를 한 번에 생성하는 시장 인텔리전스 실행."""
+    # 1) 공간 발굴 → 점수표/제안서/공간DB
+    records = pipeline.build_records(
+        regions=region or None, csv_path=None if not dry_run else csv_in, dry_run=dry_run
+    )
+    pipeline.run(regions=region or None, csv_path=None if not dry_run else csv_in, dry_run=dry_run)
+    counts = pipeline.a_grade_counts_by_region(records)
+
+    # 2) 수요·매출·공급부족·기회 리포트 (A등급 발굴 수 연동)
+    run_forecast(regions=region or None, a_grade_counts=counts, dry_run=dry_run)
+
+    typer.echo(
+        f"완료: 공간 {len(records)}건 분석, A등급 {sum(counts.values())}건. "
+        "결과는 data/output/ (점수표·제안서·공간DB·수요예측·공급부족·지역별기회)"
+    )
 
 
 if __name__ == "__main__":

@@ -74,6 +74,13 @@ class PlaceAnalysis(BaseModel):
     estimated_capacity: Optional[int] = None
     parking_likelihood: float = Field(default=0.0, ge=0, le=1)
 
+    # 행사 운영 적합성 신호 (사진/데이터 분석)
+    accessibility: float = Field(default=0.5, ge=0, le=1, description="접근성(교통/도심거리)")
+    outdoor_usable: bool = False           # 야외 활용 가능
+    rain_alternative: bool = False         # 우천 대체 실내 공간
+    photo_potential: float = Field(default=0.5, ge=0, le=1, description="사진 촬영 포텐셜")
+    private_event_possible: bool = False   # 프라이빗 단독 행사 가능
+
     # 노출/전문화 신호
     instagram_exposure: float = Field(default=0.0, ge=0, le=1, description="0=약함,1=과노출")
     wedding_mention_level: float = Field(default=0.0, ge=0, le=1, description="0=없음,1=많음")

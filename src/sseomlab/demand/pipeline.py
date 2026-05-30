@@ -10,10 +10,10 @@ import math
 from pathlib import Path
 
 from sseomlab.config import get_demand
-from sseomlab.demand import ad_timing, calibration, forecaster, kosis
+from sseomlab.demand import ad_timing, calibration, forecaster, kosis, opportunity, supply
 from sseomlab.demand.actuals import load_actuals_csv
 from sseomlab.demand.models import BirthRecord, DemandForecast
-from sseomlab.export import demand_excel
+from sseomlab.export import csv_out, demand_excel
 
 
 def _synthetic_births(regions: list[str]) -> list[BirthRecord]:
@@ -34,7 +34,9 @@ def _synthetic_births(regions: list[str]) -> list[BirthRecord]:
 def run(
     regions: list[str] | None = None,
     actuals_csv: str | Path = "data/jade_actuals.csv",
+    capacity_csv: str | Path = "data/venue_capacity.csv",
     out_path: str | Path = "data/output/demand_forecast.xlsx",
+    a_grade_counts: dict[str, int] | None = None,
     dry_run: bool = False,
 ) -> Path:
     cfg = get_demand()
@@ -59,5 +61,16 @@ def run(
     # 5) 광고 타이밍
     ad_recs = ad_timing.recommend(forecasts)
 
-    # 6) 출력
-    return demand_excel.export(forecasts, ad_recs, calib, out_path)
+    # 6) 공급 부족 예측 (웨딩 성수기 로직) + 지역별 기회 리포트
+    shortages = supply.predict(forecasts, capacity_csv)
+    opportunities = opportunity.build(shortages, a_grade_counts)
+
+    # 7) 출력: 엑셀(다중시트) + 리포트 CSV
+    out = demand_excel.export(forecasts, ad_recs, calib, out_path,
+                              shortages=shortages, opportunities=opportunities)
+    base = Path(out_path).parent
+    csv_out.export_demand(forecasts, base / "수요예측.csv")
+    csv_out.export_ad_plan(ad_recs, base / "광고계획.csv")
+    csv_out.export_supply(shortages, base / "공급부족리포트.csv")
+    csv_out.export_opportunity(opportunities, base / "지역별기회리포트.csv")
+    return out

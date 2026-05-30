@@ -14,7 +14,12 @@ from sseomlab.models import PlaceRecord
 
 def _production_elements(profile, analysis) -> list[str]:
     """카테고리 기본 연출 + 공간 신호 기반 가감."""
-    elems = [f"플라워: {profile.flower_direction}", f"테이블: {profile.table_setting}"]
+    elems = [
+        f"플라워: {profile.flower_direction}",
+        f"테이블: {profile.table_setting}",
+        f"의자: {profile.chair_style}",
+        f"포토존: {', '.join(profile.photozone_ideas)}",
+    ]
     if analysis.has_large_window:
         elems.append("통창 자연광 활용 — 별도 조명 최소화")
     if analysis.has_ocean_view:

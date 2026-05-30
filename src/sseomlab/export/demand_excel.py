@@ -8,10 +8,18 @@ from typing import Optional
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 
-from sseomlab.demand.models import AdRecommendation, CalibrationResult, DemandForecast
+from sseomlab.demand.models import (
+    AdRecommendation,
+    CalibrationResult,
+    DemandForecast,
+    OpportunityReport,
+    SupplyShortage,
+)
 
 _HEADER_FILL = PatternFill("solid", fgColor="404040")
 _PROJ_FILL = PatternFill("solid", fgColor="FFF2CC")  # 투영 구간 강조
+_SHORT_FILL = PatternFill("solid", fgColor="F8CBAD")  # 공급부족 강조
+_PEAK_FILL = PatternFill("solid", fgColor="FCE4D6")   # 성수기 강조
 
 
 def _style_header(ws):
@@ -33,6 +41,8 @@ def export(
     ad_recs: list[AdRecommendation],
     calib: Optional[CalibrationResult],
     out_path: str | Path,
+    shortages: Optional[list[SupplyShortage]] = None,
+    opportunities: Optional[list[OpportunityReport]] = None,
 ) -> Path:
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -85,6 +95,39 @@ def export(
         ws3.append([k, v])
     _style_header(ws3)
     _autosize(ws3)
+
+    # --- 시트4: 공급부족리포트 ---
+    if shortages is not None:
+        ws4 = wb.create_sheet("공급부족리포트")
+        ws4.append(["월", "지역", "성수기", "전체수요", "숨은공간수요", "수용량", "공급부족", "확보추천"])
+        for s in shortages:
+            ws4.append([
+                f"{s.year}-{s.month:02d}", s.region, "성수기" if s.is_peak_season else "평월",
+                s.total_demand_events, s.hidden_demand, s.capacity, s.shortfall,
+                ", ".join(s.recommended_types),
+            ])
+            if s.shortfall > 0:
+                ws4.cell(row=ws4.max_row, column=7).fill = _SHORT_FILL
+            if s.is_peak_season:
+                ws4.cell(row=ws4.max_row, column=3).fill = _PEAK_FILL
+        _style_header(ws4)
+        _autosize(ws4)
+
+    # --- 시트5: 지역별기회리포트 ---
+    if opportunities is not None:
+        ws5 = wb.create_sheet("지역별기회리포트")
+        ws5.append(["지역", "연간숨은수요", "연간수용량", "연간부족", "성수기부족",
+                    "부족월수", "A등급후보", "확보추천유형", "메모"])
+        for r in opportunities:
+            ws5.append([
+                r.region, r.annual_hidden_demand, r.annual_capacity, r.annual_shortfall,
+                r.peak_shortfall, len(r.shortfall_months), r.a_grade_candidates,
+                ", ".join(r.recommended_types), r.note,
+            ])
+            if r.annual_shortfall > 0:
+                ws5.cell(row=ws5.max_row, column=4).fill = _SHORT_FILL
+        _style_header(ws5)
+        _autosize(ws5)
 
     wb.save(out_path)
     return out_path

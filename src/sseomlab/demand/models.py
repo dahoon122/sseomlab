@@ -63,6 +63,34 @@ class CalibrationResult(BaseModel):
     note: str = ""
 
 
+class SupplyShortage(BaseModel):
+    """(지역, 월) 돌잔치 공급 부족 예측."""
+
+    region: str
+    year: int
+    month: int
+    is_peak_season: bool
+    total_demand_events: float        # 지역 전체 돌잔치 이벤트 수요
+    hidden_demand: float              # 소규모/숨은 공간을 필요로 하는 수요
+    capacity: float                   # 숨은/소규모 공간 수용량
+    shortfall: float                  # max(0, hidden_demand - capacity)
+    recommended_types: list[str] = []
+
+
+class OpportunityReport(BaseModel):
+    """지역별 사업 기회 요약."""
+
+    region: str
+    annual_hidden_demand: float
+    annual_capacity: float
+    annual_shortfall: float
+    peak_shortfall: float             # 성수기(3-5,9-11) 합산 부족
+    shortfall_months: list[str]       # 부족이 발생하는 월 (YYYY-MM)
+    a_grade_candidates: int = 0       # 발굴된 A등급 후보 수
+    recommended_types: list[str] = []
+    note: str = ""
+
+
 class AdRecommendation(BaseModel):
     """수요월 T 를 겨냥한 광고 투입 권고."""
 
