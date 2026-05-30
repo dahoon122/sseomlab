@@ -1,0 +1,42 @@
+# 점수화 가중치. 최종 점수는 Claude 판단(정성) + 규칙기반 신호(정량)를 결합합니다.
+# 각 항목 0~100 점으로 정규화 후 weight 가중 합산.
+
+# 숨은공간 점수 (hidden_space_score): 알려지지 않았지만 잠재력 있는 정도
+hidden_space:
+  weights:
+    instagram_low_exposure: 0.30    # 인스타 노출 약함
+    naver_review_sweetspot: 0.25    # 리뷰 50~500개 구간
+    outskirts_location: 0.20        # 외곽 지역
+    wedding_mention_absent: 0.25    # 웨딩 언급 거의 없음
+  naver_review_sweetspot_range: [50, 500]
+
+# 웨딩 전환 점수 (wedding_conversion_score)
+wedding_conversion:
+  weights:
+    outdoor_feature: 0.30           # 정원/마당/테라스/오션뷰/숲/통창
+    capacity_indoor: 0.25           # 하객 수용 가능한 실내
+    aesthetic_photo: 0.25           # 사진상 분위기/포토존
+    parking: 0.20                   # 주차 가능성
+
+# 돌상 전환 점수 (dolsang_conversion_score): 돌잔치는 소규모·실내·룸 선호
+dolsang_conversion:
+  weights:
+    private_room: 0.35              # 단독 룸/독채 가능
+    indoor_comfort: 0.25            # 실내 쾌적/유아 동반 가능
+    food_service: 0.25             # 식사/케이터링 제공
+    parking: 0.15
+
+# 협업 가능성 점수 (collaboration_probability)
+collaboration:
+  weights:
+    weekday_idle_capacity: 0.30     # 평일 유휴시간 가능성
+    not_franchise: 0.25             # 개인/독립 운영(체인 아님)
+    rental_signal: 0.25            # 대관/단체 문구 존재
+    contactability: 0.20           # 연락처/예약채널 존재
+
+# 등급 컷오프 (연락 우선순위용 종합점수 기준)
+grade_cutoffs:
+  A: 80
+  B: 65
+  C: 50
+  # 그 외 D

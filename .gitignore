@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# 환경변수 / 비밀키
+.env
+*.local
+credentials.json
+token.json
+service_account*.json
+
+# 데이터 (수집 결과는 커밋하지 않음)
+data/raw/*
+data/processed/*
+data/output/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/output/.gitkeep
+*.xlsx
+*.csv
+*.sqlite
+*.db
+
+# 캐시
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# OS / 에디터
+.DS_Store
+.idea/
+.vscode/
