@@ -31,6 +31,11 @@ data/output/*
 !data/sample_candidates.csv
 !data/jade_actuals.example.csv
 !data/venue_capacity.example.csv
+# 샘플 결과물(폰 GitHub 앱 미리보기용)은 추적
+!data/output/sample/
+!data/output/sample/*.csv
+!data/output/sample/*.xlsx
+!data/output/sample/*.md
 
 # 캐시
 .cache/
