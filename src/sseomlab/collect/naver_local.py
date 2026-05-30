@@ -81,7 +81,9 @@ def collect(regions: list[str] | None = None, space_types: list[str] | None = No
                                 homepage=item.get("link") or None,
                                 naver_place_url=item.get("link") or None,
                                 search_keyword=kw,
-                                raw_text=f"{name} {item.get('category','')} {_clean(item.get('description',''))}",
+                                # 검색 키워드(예: 정원카페)도 분석 텍스트에 포함 — 네이버 지역검색은
+                                # description 이 비는 경우가 많아 키워드가 유형/특성 분류의 핵심 단서.
+                                raw_text=f"{name} {item.get('category','')} {kw} {_clean(item.get('description',''))}",
                             )
                         )
                     time.sleep(s.request_delay_seconds)

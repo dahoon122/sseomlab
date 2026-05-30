@@ -26,15 +26,22 @@ def _main() -> None:
 def run(
     region: list[str] = typer.Option(None, help="대상 지역 (반복 지정). 미지정 시 전체"),
     space_type: list[str] = typer.Option(None, help="공간 유형 (반복 지정). 미지정 시 전체"),
+    source: str = typer.Option("auto", help="수집원: auto | csv(목업) | naver(실제, 네이버 키 필요)"),
+    scoring: str = typer.Option("heuristic", help="점수: heuristic(키 불필요) | llm(Claude 키 필요)"),
     out: str = typer.Option("data/output/sseomlab_result.xlsx", help="점수표 엑셀 경로"),
     proposal_out: str = typer.Option("data/output/sseomlab_proposals.xlsx", help="컨셉 제안서(12필드) 엑셀 경로"),
     limit: int = typer.Option(None, help="처리 장소 수 제한 (테스트용)"),
     dry_run: bool = typer.Option(False, "--dry-run", help="외부 API 없이 가짜 데이터로 실행"),
 ):
-    """공간 발굴 → 점수화 → 컨셉 제안서 생성."""
+    """공간 발굴 → 점수화 → 컨셉 제안서 생성.
+
+    예) 네이버 키만으로 실제 수집:  run --source naver --region 대구
+    """
     path = run_pipeline(
         regions=region or None,
         space_types=space_type or None,
+        source=source,
+        scoring=scoring,
         out_path=out,
         proposal_path=proposal_out,
         dry_run=dry_run,
