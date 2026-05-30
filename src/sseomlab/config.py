@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     naver_client_id: str = ""
     naver_client_secret: str = ""
 
+    kosis_api_key: str = ""
+
     google_service_account_json: str = ""
     google_sheet_id: str = ""
 
@@ -55,3 +57,13 @@ def get_space_types() -> dict[str, Any]:
 @lru_cache
 def get_scoring() -> dict[str, Any]:
     return _load_yaml("scoring.yaml")
+
+
+@lru_cache
+def get_demand() -> dict[str, Any]:
+    return _load_yaml("demand.yaml")
+
+
+@lru_cache
+def get_concepts() -> dict[str, Any]:
+    return _load_yaml("concepts.yaml")

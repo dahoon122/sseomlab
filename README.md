@@ -1,85 +1,83 @@
-# sseomlab — 웨딩/돌상 전환 가능 '숨은 공간' 발굴 시스템
+# sseomlab — 제이드컴퍼니 웨딩/돌잔치 사업 분석 시스템
 
-전국(**대구·경북·부산·경남·강원**)의 카페·식당·복합문화공간 중
-**웨딩 전문 공간이 아니면서**, 웨딩 또는 돌잔치 공간으로 **전환 가능성이 높은
-숨은 장소**를 자동으로 발굴·점수화하고 **연락 우선순위**를 만들어 엑셀/구글시트로 출력한다.
+> **내부 의사결정·기획·영업·제안서 제작용 시스템**입니다. 외부 고객용 웹사이트가 아닙니다.
 
-> 우리는 웨딩홀을 찾지 않는다. "카페·식당으로 운영 중이지만 웨딩/돌상으로 바꿀 수 있는 공간"을 찾는다.
+제이드컴퍼니가 웨딩/돌잔치 사업을 운영·확장하기 위한 3개 축의 분석 시스템:
+
+1. **공간 발굴** — 대구·경북·부산·경남·강원의 카페/식당/복합공간 중 웨딩 전문 공간이 아닌
+   *전환 가능한 숨은 공간*을 발굴·점수화·우선순위화
+2. **수요·매출 예측** — 출생아 수 기반으로 **12개월 뒤 돌잔치 수요·매출**을 예측하고
+   제이드 실적과 비교 보정, **광고 투입 시점**까지 추천
+3. **컨셉 제안** — 각 공간을 컨셉 카테고리로 분류하고 어울리는 웨딩/돌상 컨셉 레퍼런스를
+   **제안서용 12개 필드**로 자동 생성
 
 ---
 
-## 무엇을 하나 (6대 기능)
+## 핵심 아이디어
+**돌잔치는 출생 후 12개월에 열린다.** 따라서 이미 집계된 월별 출생아 수가
+12개월 뒤 돌잔치 수요의 선행지표다 → 향후 ~10개월 수요는 *예측이 아니라 거의 확정값*이다.
+여기에 제이드 실제 전환율(문의→계약)을 곱하면 매출과 광고 타이밍이 나온다.
 
-| # | 기능 | 모듈 |
-|---|------|------|
-| 1 | 지역별 공간 자동 수집 | `collect/naver_local.py` |
-| 2 | 웹사이트/네이버/인스타 정보 분석 | `collect/enrich.py`, `score/scorer.py` |
-| 3 | 공간 사진 분석 (야외요소·분위기·수용력) | `analyze/photo` + Claude Vision |
-| 4 | 웨딩/돌상 전환 가능성 점수화 | `score/scorer.py`, `score/prompts.py` |
-| 5 | 협업 가능성 점수화 | `score/scorer.py` |
-| 6 | 연락 우선순위 자동 생성 + 엑셀/시트 출력 | `pipeline.py`, `export/excel.py` |
+## 3개 축 · 기능 매핑
+
+| 축 | 기능 | 모듈 |
+|----|------|------|
+| 공간 발굴 | 지역별 수집 / 웨딩베뉴 제외 / 점수화 / 협업 평가 / 연락 우선순위 | `collect/`, `analyze/`, `score/` |
+| 수요 예측 | 월별 출생아 수집 / 12개월 수요·매출 예측 / 실적 비교 보정 / 광고 시점 추천 | `demand/` |
+| 컨셉 제안 | 컨셉 카테고리 분류 / 웨딩·돌상 컨셉·팔레트·플라워·세팅·리스크 / 제안서 12필드 | `concept/` |
+| 출력 | 엑셀 / 구글시트(예정) / 내부 대시보드(예정) | `export/` |
 
 ## 빠른 시작
 
 ```bash
-# 1) 설치
 python -m venv .venv && source .venv/bin/activate
 pip install -e .
 
-# 2) 외부 API 없이 배선부터 검증 (가짜 데이터로 엑셀 생성)
-python -m sseomlab run --dry-run --out data/output/demo.xlsx
+# 외부 API 없이 전 구간 검증 (합성 데이터로 엑셀 생성)
+python -m sseomlab run --dry-run        # 공간 발굴 + 컨셉 제안서
+python -m sseomlab forecast --dry-run   # 돌잔치 수요·매출 예측 + 광고타이밍
 
-# 3) 실제 실행 (.env 에 NAVER / ANTHROPIC 키 필요)
-cp .env.example .env   # 키 입력
-python -m sseomlab run --region 대구 --region 경북 --out data/output/대구경북.xlsx
+# 실제 실행 (.env 키 필요: NAVER / ANTHROPIC / KOSIS)
+cp .env.example .env
+python -m sseomlab run --region 대구 --region 경북
+python -m sseomlab forecast --region 부산 --actuals data/jade_actuals.csv
 ```
 
-## 동작 흐름
+## 산출물 (엑셀)
+- `sseomlab_result.xlsx` — 공간 점수표 (등급/점수/연락 우선순위)
+- `sseomlab_proposals.xlsx` — **제안서 12필드** (공간명·지역·유형·적합도·협업·고객층·웨딩컨셉·돌상컨셉·연출요소·레퍼런스·컨셉문구·우선순위)
+- `demand_forecast.xlsx` — 수요예측 / 광고계획 / 보정요약 3시트
 
-```
-수집(네이버 지역검색) → 1차 제외필터(키워드) → 정보보강(블로그/홈피/사진)
-   → Claude 판정·점수(텍스트 1차 → 유망후보만 사진 정밀) → 우선순위 → 엑셀/시트
-```
+## 제안서 12필드 (요구사항)
+1 공간명 · 2 지역 · 3 공간유형 · 4 웨딩/돌상 적합도 · 5 협업 가능성 · 6 예상 고객층
+· 7 추천 웨딩 컨셉 · 8 추천 돌상 컨셉 · 9 필요한 연출 요소 · 10 레퍼런스 키워드
+· 11 제안서 컨셉 문구 · 12 연락 우선순위
 
-비용 절감을 위해 **2단계 스크리닝**을 쓴다: 대량 후보는 저렴한 모델로 1차 걸러내고,
-유망 후보만 상위 모델 + 사진으로 정밀 판정한다.
-
-## 출력 점수 스키마 (장소 1건)
-
-```json
-{
-  "exclude": false,
-  "exclude_reason": "",
-  "space_type": "숲속카페",
-  "hidden_space_score": 70,
-  "wedding_conversion_score": 78,
-  "dolsang_conversion_score": 66,
-  "collaboration_probability": 72,
-  "grade": "A",
-  "recommended_offer": "평일 오후 유휴시간 웨딩/돌상 대관 제휴 제안"
-}
-```
+## 컨셉 카테고리 (10종)
+정원형 · 한옥/고택형 · 오션뷰형 · 숲속/자연형 · 루프탑/도심뷰형 · 브런치/레스토랑형
+· 갤러리/복합문화공간형 · 대형 베이커리카페형 · 프라이빗 독채형 · 농장/목장/체험형
+→ 각 카테고리마다 웨딩 컨셉·돌상 컨셉·컬러 팔레트·플라워·테이블 세팅·촬영 포인트·리스크를 `config/concepts.yaml`에 정의. ([docs/CONCEPTS.md](docs/CONCEPTS.md))
 
 ## 프로젝트 구조
-
 ```
-config/            지역·공간유형·점수가중치 (코드 수정 없이 정책 조정)
+config/            지역·공간유형·점수·수요파라미터·컨셉 카탈로그 (코드 수정 없이 정책 조정)
 src/sseomlab/
-  collect/         1. 수집 + 2. 정보보강
-  analyze/         규칙기반 제외필터 + 사진분석
+  collect/         공간 수집 + 정보 보강
+  analyze/         웨딩베뉴 제외 필터 + 사진 분석
   score/           Claude 프롬프트 + 점수화
-  export/          엑셀 / 구글시트 출력
-  pipeline.py      전 단계 오케스트레이션 (dry-run 지원)
-  cli.py           명령행 진입점
-docs/              로드맵 · 아키텍처 · 데이터출처/법적주의
-tests/             제외필터 · dry-run 파이프라인 테스트
+  concept/         컨셉 분류 + 제안서 12필드 생성
+  demand/          출생아 수집(KOSIS) → 수요·매출 예측 → 보정 → 광고타이밍
+  export/          엑셀 / 구글시트 / 제안서 / 수요예측 출력
+  pipeline.py      공간 발굴 파이프라인 (dry-run)
+  cli.py           run / forecast 명령
+docs/              로드맵 · 아키텍처 · 컨셉 · 데이터출처
+tests/             제외필터 · 수요예측 · 컨셉 · dry-run
 ```
 
 ## 문서
-- [개발 로드맵](docs/ROADMAP.md) — 단계별 마일스톤
-- [아키텍처](docs/ARCHITECTURE.md) — 데이터 흐름 / 모델 / 비용 전략
-- [데이터 출처와 법적 주의](docs/DATA_SOURCES.md) — API/스크래핑 ToS 준수 원칙
+- [개발 로드맵](docs/ROADMAP.md) · [아키텍처](docs/ARCHITECTURE.md)
+- [컨셉 카탈로그](docs/CONCEPTS.md) · [데이터 출처/법적 주의](docs/DATA_SOURCES.md)
 
 ## 주의
-네이버/인스타그램 등 외부 데이터는 **공식 API 우선**, ToS·robots·rate limit 을 준수한다.
-자세한 내용은 [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md) 참고.
+내부 영업/기획용 시스템. 외부 데이터는 공식 API 우선, ToS·rate limit 준수.
+수요예측의 전환율은 초기 가정값이며 **제이드 실제 실적으로 calibration 해야** 정확해진다.

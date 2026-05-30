@@ -11,7 +11,8 @@ from pathlib import Path
 
 from sseomlab.analyze import exclusion
 from sseomlab.collect import enrich, naver_local
-from sseomlab.export import excel
+from sseomlab.concept import recommender
+from sseomlab.export import excel, proposal_excel
 from sseomlab.models import Grade, Place, PlaceAnalysis, PlaceRecord, PlaceScore, SpaceType
 from sseomlab.score import scorer
 
@@ -38,6 +39,7 @@ def run(
     regions: list[str] | None = None,
     space_types: list[str] | None = None,
     out_path: str | Path = "data/output/sseomlab_result.xlsx",
+    proposal_path: str | Path | None = "data/output/sseomlab_proposals.xlsx",
     dry_run: bool = False,
     limit: int | None = None,
 ) -> Path:
@@ -70,8 +72,12 @@ def run(
     # 5) 우선순위
     records = _assign_priority(records)
 
-    # 6) 출력
-    return excel.export(records, out_path)
+    # 6) 출력: 점수표 + 컨셉 제안서(12필드)
+    out = excel.export(records, out_path)
+    if proposal_path:
+        proposals = [recommender.build_proposal(r, claude_refine=not dry_run) for r in records]
+        proposal_excel.export(proposals, proposal_path)
+    return out
 
 
 def _dry_score(place: Place) -> tuple[PlaceAnalysis, PlaceScore]:
